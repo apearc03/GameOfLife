@@ -17,7 +17,7 @@ public class entity {
 	private final int y;
 	private boolean living;
 	
-	
+
 	//if clicked set to living or dead.
 	
 	public entity(int xCo, int yCo, int width, int height) {
@@ -34,20 +34,10 @@ public class entity {
 		living = false;
 		
 		
-		
+
 	}
 	
 
-	public void die() {
-		
-		living = false;
-	
-	}
-	
-
-	public void live() {
-		living = true;
-	}
 
 	public Texture getTexture() {
 		if(living) {
@@ -67,6 +57,8 @@ public class entity {
 	public boolean getLiving() {
 		return living;
 	}
+	
+	
 	
 	public int getX() {
 		return x;
