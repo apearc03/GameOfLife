@@ -1,11 +1,7 @@
 package com.mygdx.game;
 
-import java.awt.Point;
-import java.util.HashMap;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
-
-public class board extends Actor{
+public class board {
 
 	
 
@@ -14,10 +10,20 @@ public class board extends Actor{
 	
 	private entity[][] entities;
 	
+	private int entityWidth;
+	private int entityHeight;
 	
-	public board(int width, int height, int entityWidth, int entityHeight) {
+	private int boardWidth;
+	private int boardHeight;
+	
+	public board(int width, int height, int entityW, int entityH) {
 		
-			
+		entityWidth = entityW;
+		entityHeight = entityH;
+		
+		boardWidth = width;
+		boardHeight = height;
+		
 		entities = new entity[width][height];
 		//try with array instead. Hashmap doesnt loop through in order.
 		for(int x = 0;x<width;x+=entityWidth) {
@@ -26,38 +32,23 @@ public class board extends Actor{
 			}
 		}
 		
-	/*	
-		entities = new HashMap<Point, entity>();
-		for(int i = 0;i<width;i+=entityWidth) {
-			for(int j = 0;j<=height;j+=entityHeight) {
-				entities.put(new Point(i, j),new entity(i, j,entityWidth,entityHeight));	
-			}
-			
-		}
-	
-		neighbour = new Point(0, 0);
-		*/
-	
-	}
-	
-	
-	
 
 	
-	public void setAlive(int x, int y) {
-		
-		
 	}
 	
 	
+	
+	
+	
+	//improve with checks for periodic checks of liveNeighbours
 	public int checkNeighbours(entity e) {
 		int liveNeighbours = 0;
 		
-		//left middle
+		
 		int neighbourx = e.getX();
 		int neighboury = e.getY();
-		
-		if(e.getX()>0&&entities[neighbourx-5][neighboury].getLiving()) {
+		//left middle
+		if(e.getX()>0&&entities[neighbourx-entityWidth][neighboury].getLiving()) {
 			liveNeighbours++;
 			//entities[neighbourx][neighboury].setLiving(true);
 		}
@@ -65,28 +56,28 @@ public class board extends Actor{
 		//left corner
 
 		
-		if(e.getX()>0&&e.getY()>0&&entities[neighbourx-5][neighboury-5].getLiving()) {
+		if(e.getX()>0&&e.getY()>0&&entities[neighbourx-entityWidth][neighboury-entityHeight].getLiving()) {
 			liveNeighbours++;
 			
 		}
 		
 		//top
 
-		if(e.getY()>0&&entities[neighbourx][neighboury-5].getLiving()) {
+		if(e.getY()>0&&entities[neighbourx][neighboury-entityHeight].getLiving()) {
 			liveNeighbours++;
 			//entities.get(neighbour).setLiving(true);
 		}
 		
 		//right corner
 
-		if(e.getX()<595&&e.getY()>0&&entities[neighbourx+5][neighboury-5].getLiving()) {
+		if(e.getX()<boardWidth-entityWidth&&e.getY()>0&&entities[neighbourx+entityWidth][neighboury-entityHeight].getLiving()) {
 			liveNeighbours++;
 			//entities.get(neighbour).setLiving(true);
 		}
 		
 		//right middle
 
-		if(e.getX()<595&&entities[neighbourx+5][neighboury].getLiving()) {
+		if(e.getX()<boardWidth-entityWidth&&entities[neighbourx+entityWidth][neighboury].getLiving()) {
 			liveNeighbours++;
 			//entities.get(neighbour).setLiving(true);
 			
@@ -95,7 +86,7 @@ public class board extends Actor{
 		//right bottom
 
 
-		if(e.getX()<595&&e.getY()<595&&entities[neighbourx+5][neighboury+5].getLiving()) {
+		if(e.getX()<boardWidth-entityWidth&&e.getY()<boardHeight-entityHeight&&entities[neighbourx+entityWidth][neighboury+entityHeight].getLiving()) {
 			liveNeighbours++;
 			//entities.get(neighbour).setLiving(true);
 			
@@ -104,14 +95,14 @@ public class board extends Actor{
 		
 		//bottom
 	
-		if(e.getY()<595&&entities[neighbourx][neighboury+5].getLiving()) {
+		if(e.getY()<boardHeight-entityHeight&&entities[neighbourx][neighboury+entityHeight].getLiving()) {
 			liveNeighbours++;
 			//entities.get(neighbour).setLiving(true);
 			
 		}
 		
 		//bottom left
-		if(e.getX()>0&&e.getY()<595&&entities[neighbourx-5][neighboury+5].getLiving()) {
+		if(e.getX()>0&&e.getY()<boardHeight-entityHeight&&entities[neighbourx-entityWidth][neighboury+entityHeight].getLiving()) {
 			liveNeighbours++;
 			//entities.get(neighbour).setLiving(true);
 			
@@ -122,7 +113,7 @@ public class board extends Actor{
 	}
 	
 
-	//Doesnt work
+
 	public boolean liveOrDie(entity e, int liveNeighbours) {
 		
 		if(liveNeighbours==3 || (liveNeighbours==2&&e.getLiving())) {

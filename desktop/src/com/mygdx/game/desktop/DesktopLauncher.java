@@ -8,7 +8,8 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		new LwjglApplication(new MyGdxGame(), config);
-		config.width = 600;
-		config.height = 800;
+		config.width = 1000;
+		config.height = 1000;
+		config.title = "Conway's game of life";
 	}
 }
