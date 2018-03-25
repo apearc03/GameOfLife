@@ -8,6 +8,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -36,18 +37,26 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 	
 	private board b;
-	private TextButton play;
-	private TextButton reset;
-	private TextButton stop;
+	private TextButton play
+	,reset
+	,stop
+	,apply
+	,quit;
 	
 	private TextField bHeight;
 	private TextField bWidth;
 	private TextField eWidth;
 	private TextField eHeight;
 	
-	
-	private Label status;
-	private Label aliveLabel;
+	private Label 
+	bWidthLabel,
+	bHeightLabel,
+	eWidthLabel,
+	eHeightLabel,
+	status,
+	aliveLabel,
+	error,
+	patterns;
 	
 	private Stage stage;
 	private OrthographicCamera camera;
@@ -84,24 +93,79 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		skin = new Skin(Gdx.files.internal("uiskin.json"));
 		
 		play = new TextButton("Play", skin);
-		play.setPosition(50, 150);
+		play.setPosition(50, 155);
 		stage.addActor(play);
 		
 		reset = new TextButton("Reset", skin);
-		reset.setPosition(50, 100);
+		reset.setPosition(50, 120);
 		stage.addActor(reset);
 		
 		stop = new TextButton("Stop", skin);
-		stop.setPosition(50, 50);
+		stop.setPosition(50, 85);
 		stage.addActor(stop);
 		
-		status = new Label("Status : Stopped", skin);
-		status.setPosition(200, 150);
+		quit = new TextButton("Quit", skin);
+		quit.setPosition(50, 50);
+		stage.addActor(quit);
+		
+		status = new Label("Status : Reset", skin);
+		status.setPosition(125, 155);
 		stage.addActor(status);
 		
 		aliveLabel = new Label("Alive cells : ", skin);
-		aliveLabel.setPosition(200, 100);
+		aliveLabel.setPosition(125, 120);
 		stage.addActor(aliveLabel);
+		
+		bWidth = new TextField("", skin);
+		bWidth.setPosition(800, 155);
+		bWidth.setMessageText("Board Width");
+		stage.addActor(bWidth);
+		
+		bHeight = new TextField("", skin);
+		bHeight.setPosition(800, 120);
+		bHeight.setMessageText("Board Height");
+		stage.addActor(bHeight);
+
+		eWidth = new TextField("", skin);
+		eWidth.setPosition(800, 85);
+		eWidth.setMessageText("Cell Width");
+		stage.addActor(eWidth);
+		
+		eHeight = new TextField("", skin);
+		eHeight.setPosition(800, 50);
+		eHeight.setMessageText("Cell Height");
+		stage.addActor(eHeight);
+		
+		
+		apply = new TextButton("Apply", skin);
+		apply.setPosition(800, 15);
+		stage.addActor(apply);
+		
+		error = new Label("Invalid inputs", skin);
+		error.setVisible(false);
+		error.setPosition(850, 15);
+		error.setColor(Color.RED);
+		stage.addActor(error);
+		
+		bWidthLabel = new Label("Board Width(Max = 1000, Min = 400)", skin);
+		bWidthLabel.setPosition(500,155);
+		stage.addActor(bWidthLabel);
+		
+		bHeightLabel = new Label("Board Height(Max = 800, Min = 400)", skin);
+		bHeightLabel.setPosition(500,120);
+		stage.addActor(bHeightLabel);
+		
+		eWidthLabel = new Label("Cell Width(Max = 10, Min = 3)", skin);
+		eWidthLabel.setPosition(500,85);
+		stage.addActor(eWidthLabel);
+		
+		eHeightLabel = new Label("Cell Height(Max = 10, Min = 3)", skin);
+		eHeightLabel.setPosition(500,50);
+		stage.addActor(eHeightLabel);
+		
+		patterns = new Label("Patterns", skin);
+		patterns.setPosition(325, 155);
+		stage.addActor(patterns);
 		
 		inputMultiplexer = new InputMultiplexer();
 		inputMultiplexer.addProcessor(this);
@@ -141,17 +205,37 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 			public void clicked(InputEvent event, float x, float y) {
 				status.setText("Status : Stopped");
 				
-				/*boardHeight = 400;
-				boardWidth = 400;
-				entityWidth =5;
-				entityHeight = 10;
-				b = new board(boardWidth, boardHeight , entityWidth, entityHeight);
-				placeHolder = new boolean[400][400];*/
 				
 				
 				playing = false;
 				super.clicked(event, x, y);
 			}
+		});
+		
+		
+		apply.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				
+				error.setVisible(false);
+				validate(bWidth.getText(),bHeight.getText(),eWidth.getText(),eHeight.getText());
+				
+				
+				
+				
+				super.clicked(event, x, y);
+			}
+
+			
+		});
+		
+		quit.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				Gdx.app.exit();
+				super.clicked(event, x, y);
+			}
+			
 		});
 		
 		placeHolder = new boolean[boardWidth][boardHeight];
@@ -282,11 +366,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public void dispose () {
 		batch.dispose();
-		for(int x =0;x<b.getEntityArray().length;x+=entityWidth) {
-			for(int y=0;y<b.getEntityArray()[0].length;y+=entityHeight) {
-				b.getEntityArray()[x][y].dispose();
-			}
-		}
+		disposeCells();
 	}
 
 	@Override
@@ -321,35 +401,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		//System.out.println(screenX + " x " +  screenY + "y");
 		
-		int x = (screenX*appWidth)/Gdx.graphics.getWidth();
-		int y = (screenY*appHeight)/Gdx.graphics.getHeight();
-		
-		while(x%entityWidth!=0) {
-			x--;
-		}
-		while(y%entityHeight!=0) {
-			y--;
-		}
-
-		//entity e = b.getEntities().get(new Point(x,y));
-		if(x<boardWidth&&y<boardHeight) {
-		entity e = b.getEntityArray()[x][y];
-		
-			if(e.getLiving()) {
-				
-				e.setLiving(false);
-				//aliveCells-=1;
-	
-				//activeCells.remove(new Point(x,y));
-			}
-			else {
-				//e.live();
-				e.setLiving(true);
-				//aliveCells+=1;
-				
-				//addActive(new Point(x,y));
-			}
-		}
+		controls(screenX,screenY);
 	
 	
 		return false;
@@ -440,7 +492,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		// TODO Auto-generated method stub
+		controls(screenX,screenY);
+
 		return false;
 	}
 
@@ -467,6 +520,87 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 			
 		}
 		
+	}
+	
+	
+	private void validate(String bWidth, String bHeight, String entWidth, String entHeight) {
+	
+		int width;
+		int height;
+		int eWidth;
+		int eHeight;
+		
+		   try {
+		        width = Integer.parseInt( bWidth );
+		        height = Integer.parseInt( bHeight );
+		        eWidth = Integer.parseInt( entWidth );
+		        eHeight = Integer.parseInt( entHeight );
+		        
+		        if(width<=1000&&width>=400&&height<=800&&height>=400&&eWidth<=10&&eWidth>=3&&eHeight<=10&&eHeight>=3) {
+		        	disposeCells();
+		        	boardWidth = width;
+		        	boardHeight = height;
+		        	entityWidth = eWidth;
+		        	entityHeight = eHeight;
+		        	b = new board(boardWidth, boardHeight , entityWidth, entityHeight);
+					placeHolder = new boolean[boardWidth][boardHeight];
+					status.setText("Status : Reset");
+					playing = false;
+					reset();
+					aliveCells = 0;
+		        }
+		        else {
+		        	error.setVisible(true);
+		        }
+		        
+		    }
+		    catch( NumberFormatException e ) {
+		    	error.setVisible(true);
+		    }
+		
+
+	}
+	
+	
+	private void disposeCells() {
+		for(int x =0;x<b.getEntityArray().length;x+=entityWidth) {
+			for(int y=0;y<b.getEntityArray()[0].length;y+=entityHeight) {
+				b.getEntityArray()[x][y].dispose();
+			}
+		}
+	}
+	
+	private void controls(int screenX,int screenY) {
+		
+		int x = (screenX*appWidth)/Gdx.graphics.getWidth();
+		int y = (screenY*appHeight)/Gdx.graphics.getHeight();
+		
+		while(x%entityWidth!=0) {
+			x--;
+		}
+		while(y%entityHeight!=0) {
+			y--;
+		}
+
+		//entity e = b.getEntities().get(new Point(x,y));
+		if(x<boardWidth&&y<boardHeight) {
+		entity e = b.getEntityArray()[x][y];
+		
+			if(e.getLiving()) {
+				
+				e.setLiving(false);
+				//aliveCells-=1;
+	
+				//activeCells.remove(new Point(x,y));
+			}
+			else {
+				//e.live();
+				e.setLiving(true);
+				//aliveCells+=1;
+				
+				//addActive(new Point(x,y));
+			}
+		}
 	}
 	
 }
