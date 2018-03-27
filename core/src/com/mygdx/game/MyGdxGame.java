@@ -28,12 +28,12 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 
 
-	private int appWidth;
-	private int appHeight;
-	private int boardWidth;
-	private int boardHeight;
-	private int entityWidth;
-	private int entityHeight;
+	private int appWidth,
+	appHeight,
+	boardWidth,
+	boardHeight,
+	entityWidth,
+	entityHeight;
 
 	
 	private board b;
@@ -43,11 +43,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	,apply
 	,quit;
 	
-	private TextField bHeight;
-	private TextField bWidth;
-	private TextField eWidth;
-	private TextField eHeight;
-	
+	private TextField bHeight,
+	bWidth,
+	eWidth,
+	eHeight;
+		
 	private Label 
 	bWidthLabel,
 	bHeightLabel,
@@ -68,6 +68,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	private boolean playing;
 	
 	
+	private String aliveString;
 	private int aliveCells;	
 	/*private HashSet<Point> activeCells;
 	private ArrayList<Point> toRemove;
@@ -84,6 +85,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		boardHeight = 800;
 		entityWidth = 4;
 		entityHeight = 4;
+		
+		aliveString = "Alive cells : ";
 		
 		camera= new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.setToOrtho(true, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -112,7 +115,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		status.setPosition(125, 155);
 		stage.addActor(status);
 		
-		aliveLabel = new Label("Alive cells : ", skin);
+		aliveLabel = new Label(aliveString, skin);
 		aliveLabel.setPosition(125, 120);
 		stage.addActor(aliveLabel);
 		
@@ -353,7 +356,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 				}
 			}
 			
-		aliveLabel.setText("Alive cells : "+ aliveCells);	
+		aliveLabel.setText(aliveString + aliveCells);	
 	
 		
 		batch.end();
@@ -582,9 +585,9 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 			y--;
 		}
 
-		//entity e = b.getEntities().get(new Point(x,y));
-		if(x<boardWidth&&y<boardHeight) {
-		entity e = b.getEntityArray()[x][y];
+		
+		if(x<boardWidth&&y<boardHeight&&x>=0&&y>=0) {
+			entity e = b.getEntityArray()[x][y];
 		
 			if(e.getLiving()) {
 				
