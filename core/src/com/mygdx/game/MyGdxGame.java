@@ -1,9 +1,5 @@
 package com.mygdx.game;
 
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -21,22 +17,28 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 
+/**
+ * 
+ * @author Alex
+ * 
+ * Main game class renders the board, entities and controls.
+ * Updates the state of the entities.
+ * Controls input.
+ *
+ */
 public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	
 	
-	SpriteBatch batch;
+	private SpriteBatch batch;
 
-
-
+	//appattributes
 	private int appWidth,
-	appHeight,
-	boardWidth,
-	boardHeight,
-	entityWidth,
-	entityHeight;
+	appHeight;
 
 	
 	private board b;
+	
+	//GUI buttons and fields
 	private TextButton play
 	,reset
 	,stop
@@ -63,13 +65,16 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	private Skin skin;
 	private InputMultiplexer inputMultiplexer;
 	
+	
+	//PlaceHolder to store the state of each entitiy. Dead or alive.
 	private boolean[][] placeHolder;
-
+	//Whether the game is paused or running
 	private boolean playing;
 	
 	
 	private String aliveString;
 	private int aliveCells;	
+	
 	/*private HashSet<Point> activeCells;
 	private ArrayList<Point> toRemove;
 	private ArrayList<Point> toAdd;*/
@@ -77,14 +82,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	@Override
 	public void create () {
 	
-		//placeHolder = new entity[boardWidth][boardHeight];
+	
 
 		appWidth = 1000;
 		appHeight = 1000;
-		boardWidth = 1000;
-		boardHeight = 800;
-		entityWidth = 4;
-		entityHeight = 4;
+	
 		
 		aliveString = "Alive cells : ";
 		
@@ -174,7 +176,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		inputMultiplexer.addProcessor(this);
 		inputMultiplexer.addProcessor(stage);
 		Gdx.input.setInputProcessor(inputMultiplexer);
-		b = new board(boardWidth,boardHeight,entityWidth,entityHeight);
+		b = new board(1000,800,4,4);
 
 		playing = false; //set to false
 		
@@ -241,7 +243,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 			
 		});
 		
-		placeHolder = new boolean[boardWidth][boardHeight];
+		placeHolder = new boolean[b.getBoardWidth()][b.getBoardHeight()];
 		
 		aliveCells = 0;
 		
@@ -320,30 +322,31 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		}*/
 		
 		//Inefficient solution
-		for(int x =0;x<b.getEntityArray().length;x+=entityWidth) {
+		
+		//Uses the placeholder to store the next entity state dependent on the checkNeighbours method
+		for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
 			 
-			for(int y=0;y<b.getEntityArray()[0].length;y+=entityHeight) {
+			for(int y=0;y<b.getEntityArray()[0].length;y+=b.getEntityHeight()) {
 				
-				
+					//If the placeHolder stored state is false and liveOrDie results with true then aliveCells is incremented
 					if(!placeHolder[x][y]&&b.liveOrDie(b.getEntityArray()[x][y], b.checkNeighbours(b.getEntityArray()[x][y]))) {
 						aliveCells+=1;
 					}
-					
+					//PlaceHolder is true and liveOrDie results in false(Dead)
 					if(placeHolder[x][y]&&!b.liveOrDie(b.getEntityArray()[x][y], b.checkNeighbours(b.getEntityArray()[x][y]))) {
 						aliveCells-=1;
 					}
-				
+				//placeHolder is initialized with the result of liveOrDie
 				placeHolder[x][y] = b.liveOrDie(b.getEntityArray()[x][y], b.checkNeighbours(b.getEntityArray()[x][y]));
-				
-				
+
 			
 			}
 		}
 		
 			
-		
-			for(int x =0;x<b.getEntityArray().length;x+=entityWidth) {
-				for(int y=0;y<b.getEntityArray()[0].length;y+=entityHeight) {
+		//Each entity is drawn to the screen.
+			for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
+				for(int y=0;y<b.getEntityArray()[0].length;y+=b.getEntityHeight()) {
 					
 					batch.draw(b.getEntityArray()[x][y].getTexture(), b.getEntityArray()[x][y].getX(), b.getEntityArray()[x][y].getY());
 					
@@ -515,8 +518,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	}
 	
 	public void reset() {
-		for(int x =0;x<b.getEntityArray().length;x+=entityWidth) {
-			for(int y=0;y<b.getEntityArray()[0].length;y+=entityHeight) {
+		for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
+			for(int y=0;y<b.getEntityArray()[0].length;y+=b.getEntityHeight()) {
 				b.getEntityArray()[x][y].setLiving(false);
 				
 			}
@@ -525,7 +528,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		
 	}
 	
-	
+	//Validates the input to the board and entity dimension textfields
 	private void validate(String bWidth, String bHeight, String entWidth, String entHeight) {
 	
 		int width;
@@ -541,12 +544,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		        
 		        if(width<=1000&&width>=400&&height<=800&&height>=400&&eWidth<=10&&eWidth>=3&&eHeight<=10&&eHeight>=3) {
 		        	disposeCells();
-		        	boardWidth = width;
-		        	boardHeight = height;
-		        	entityWidth = eWidth;
-		        	entityHeight = eHeight;
-		        	b = new board(boardWidth, boardHeight , entityWidth, entityHeight);
-					placeHolder = new boolean[boardWidth][boardHeight];
+		        	b = new board(width, height , eWidth, eHeight);
+					placeHolder = new boolean[width][height];
 					status.setText("Status : Reset");
 					playing = false;
 					reset();
@@ -566,42 +565,43 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	
 	
 	private void disposeCells() {
-		for(int x =0;x<b.getEntityArray().length;x+=entityWidth) {
-			for(int y=0;y<b.getEntityArray()[0].length;y+=entityHeight) {
+		for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
+			for(int y=0;y<b.getEntityArray()[0].length;y+=b.getEntityHeight()) {
 				b.getEntityArray()[x][y].dispose();
 			}
 		}
 	}
 	
+	//Used for board input. Sets a dead entity to alive or an alive entity to dead.
 	private void controls(int screenX,int screenY) {
 		
+		
+		//Variables dependent on the app size
 		int x = (screenX*appWidth)/Gdx.graphics.getWidth();
 		int y = (screenY*appHeight)/Gdx.graphics.getHeight();
 		
-		while(x%entityWidth!=0) {
+		
+		
+		while(x%b.getEntityWidth()!=0) {
 			x--;
 		}
-		while(y%entityHeight!=0) {
+		while(y%b.getEntityHeight()!=0) {
 			y--;
 		}
 
 		
-		if(x<boardWidth&&y<boardHeight&&x>=0&&y>=0) {
+		if(x<b.getBoardWidth()&&y<b.getBoardHeight()&&x>=0&&y>=0) {
 			entity e = b.getEntityArray()[x][y];
 		
 			if(e.getLiving()) {
 				
 				e.setLiving(false);
-				//aliveCells-=1;
-	
-				//activeCells.remove(new Point(x,y));
+			
 			}
 			else {
-				//e.live();
+			
 				e.setLiving(true);
-				//aliveCells+=1;
-				
-				//addActive(new Point(x,y));
+			
 			}
 		}
 	}
