@@ -57,8 +57,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	eHeightLabel,
 	status,
 	aliveLabel,
-	error,
-	patterns;
+	error;
 	
 	private Stage stage;
 	private OrthographicCamera camera;
@@ -84,8 +83,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	
 	
 
-		appWidth = 1000;
-		appHeight = 1000;
+		appWidth = 800;
+		appHeight = 800;
 	
 		
 		aliveString = "Alive cells : ";
@@ -122,61 +121,58 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		stage.addActor(aliveLabel);
 		
 		bWidth = new TextField("", skin);
-		bWidth.setPosition(800, 155);
+		bWidth.setPosition(600, 155);
 		bWidth.setMessageText("Board Width");
 		stage.addActor(bWidth);
 		
 		bHeight = new TextField("", skin);
-		bHeight.setPosition(800, 120);
+		bHeight.setPosition(600, 120);
 		bHeight.setMessageText("Board Height");
 		stage.addActor(bHeight);
 
 		eWidth = new TextField("", skin);
-		eWidth.setPosition(800, 85);
+		eWidth.setPosition(600, 85);
 		eWidth.setMessageText("Cell Width");
 		stage.addActor(eWidth);
 		
 		eHeight = new TextField("", skin);
-		eHeight.setPosition(800, 50);
+		eHeight.setPosition(600, 50);
 		eHeight.setMessageText("Cell Height");
 		stage.addActor(eHeight);
 		
 		
 		apply = new TextButton("Apply", skin);
-		apply.setPosition(800, 15);
+		apply.setPosition(600, 15);
 		stage.addActor(apply);
 		
 		error = new Label("Invalid inputs", skin);
 		error.setVisible(false);
-		error.setPosition(850, 15);
+		error.setPosition(650, 15);
 		error.setColor(Color.RED);
 		stage.addActor(error);
 		
-		bWidthLabel = new Label("Board Width(Max = 1000, Min = 400)", skin);
-		bWidthLabel.setPosition(500,155);
+		bWidthLabel = new Label("Board Width(Max = 800, Min = 400)", skin);
+		bWidthLabel.setPosition(300,155);
 		stage.addActor(bWidthLabel);
 		
-		bHeightLabel = new Label("Board Height(Max = 800, Min = 400)", skin);
-		bHeightLabel.setPosition(500,120);
+		bHeightLabel = new Label("Board Height(Max = 600, Min = 400)", skin);
+		bHeightLabel.setPosition(300,120);
 		stage.addActor(bHeightLabel);
 		
 		eWidthLabel = new Label("Cell Width(Max = 10, Min = 3)", skin);
-		eWidthLabel.setPosition(500,85);
+		eWidthLabel.setPosition(300,85);
 		stage.addActor(eWidthLabel);
 		
 		eHeightLabel = new Label("Cell Height(Max = 10, Min = 3)", skin);
-		eHeightLabel.setPosition(500,50);
+		eHeightLabel.setPosition(300,50);
 		stage.addActor(eHeightLabel);
 		
-		patterns = new Label("Patterns", skin);
-		patterns.setPosition(325, 155);
-		stage.addActor(patterns);
 		
 		inputMultiplexer = new InputMultiplexer();
 		inputMultiplexer.addProcessor(this);
 		inputMultiplexer.addProcessor(stage);
 		Gdx.input.setInputProcessor(inputMultiplexer);
-		b = new board(1000,800,4,4);
+		b = new board(800,600,3,3);
 
 		playing = false; //set to false
 		
@@ -542,7 +538,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		        eWidth = Integer.parseInt( entWidth );
 		        eHeight = Integer.parseInt( entHeight );
 		        
-		        if(width<=1000&&width>=400&&height<=800&&height>=400&&eWidth<=10&&eWidth>=3&&eHeight<=10&&eHeight>=3) {
+		        if(width<=800&&width>=400&&height<=600&&height>=400&&eWidth<=10&&eWidth>=3&&eHeight<=10&&eHeight>=3) {
 		        	disposeCells();
 		        	b = new board(width, height , eWidth, eHeight);
 					placeHolder = new boolean[width][height];
