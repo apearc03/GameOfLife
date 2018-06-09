@@ -17,10 +17,10 @@ public class entity {
 
 	//Pixmaps and textures for entity colouring
 	private final Pixmap aliveP;
-	private final Pixmap deadP;
+	//private final Pixmap deadP;
 	
 	private final Texture alive;
-	private final Texture dead;
+	//private final Texture dead;
 	
 	//x and y coordinates for positioning on the board
 	private final int x;
@@ -33,11 +33,11 @@ public class entity {
 		aliveP = new Pixmap( width, height, Format.RGBA8888 );
 		aliveP.setColor( 0, 1, 1, 0.75f );
 		aliveP.fill();
-		deadP = new Pixmap( width, height, Format.RGBA8888 );
-		deadP.setColor( 1, 0, 0, 0.5f);
-		deadP.fill();
+		//deadP = new Pixmap( width, height, Format.RGBA8888 );
+		//deadP.setColor( 1, 0, 0, 0.5f);
+		//deadP.fill();
 		alive = new Texture(aliveP);
-		dead = new Texture(deadP);
+		//dead = new Texture(deadP);
 		x = xCo;
 		y = yCo;
 		living = false;
@@ -49,12 +49,12 @@ public class entity {
 
 	//Returns the texture dependent on the state of the cell
 	public Texture getTexture() {
-		if(living) {
+		//if(living) {
 			return alive;
-		}
-		else {
+		//}
+		/*else {
 			return dead;
-		}	
+		}*/	
 		
 	}
 	
@@ -80,9 +80,9 @@ public class entity {
 	//Disposes of resources. Call when the app closes
 	public void dispose() {
 		aliveP.dispose();
-		deadP.dispose();
+		//deadP.dispose();
 		alive.dispose();
-		dead.dispose();
+		//dead.dispose();
 	}
 	
 }

@@ -1,5 +1,9 @@
 package com.mygdx.game;
 
+import java.awt.Point;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -7,6 +11,9 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -31,7 +38,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	
 	private SpriteBatch batch;
 
-	//appattributes
+	//app attributes
 	private int appWidth,
 	appHeight;
 
@@ -45,14 +52,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	,apply
 	,quit;
 	
-	private TextField bHeight,
-	bWidth,
+	private TextField
 	eWidth,
 	eHeight;
 		
-	private Label 
-	bWidthLabel,
-	bHeightLabel,
+	private Label
 	eWidthLabel,
 	eHeightLabel,
 	status,
@@ -65,7 +69,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	private InputMultiplexer inputMultiplexer;
 	
 	
-	//PlaceHolder to store the state of each entitiy. Dead or alive.
+	//PlaceHolder to store the state of each entity. Dead or alive.
 	private boolean[][] placeHolder;
 	//Whether the game is paused or running
 	private boolean playing;
@@ -74,9 +78,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	private String aliveString;
 	private int aliveCells;	
 	
-	/*private HashSet<Point> activeCells;
-	private ArrayList<Point> toRemove;
-	private ArrayList<Point> toAdd;*/
+	
+	private Set<Point> newActiveCells;
+	
+	private Pixmap border;
+	private Texture borderTexture;
 	
 	@Override
 	public void create () {
@@ -86,6 +92,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		appWidth = 800;
 		appHeight = 800;
 	
+		
+		
 		
 		aliveString = "Alive cells : ";
 		
@@ -120,15 +128,9 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		aliveLabel.setPosition(125, 120);
 		stage.addActor(aliveLabel);
 		
-		bWidth = new TextField("", skin);
-		bWidth.setPosition(600, 155);
-		bWidth.setMessageText("Board Width");
-		stage.addActor(bWidth);
+	
 		
-		bHeight = new TextField("", skin);
-		bHeight.setPosition(600, 120);
-		bHeight.setMessageText("Board Height");
-		stage.addActor(bHeight);
+	
 
 		eWidth = new TextField("", skin);
 		eWidth.setPosition(600, 85);
@@ -151,19 +153,12 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		error.setColor(Color.RED);
 		stage.addActor(error);
 		
-		bWidthLabel = new Label("Board Width(Max = 800, Min = 400)", skin);
-		bWidthLabel.setPosition(300,155);
-		stage.addActor(bWidthLabel);
 		
-		bHeightLabel = new Label("Board Height(Max = 600, Min = 400)", skin);
-		bHeightLabel.setPosition(300,120);
-		stage.addActor(bHeightLabel);
-		
-		eWidthLabel = new Label("Cell Width(Max = 10, Min = 3)", skin);
+		eWidthLabel = new Label("Cell Width(Max = 10, Min = 1)", skin);
 		eWidthLabel.setPosition(300,85);
 		stage.addActor(eWidthLabel);
 		
-		eHeightLabel = new Label("Cell Height(Max = 10, Min = 3)", skin);
+		eHeightLabel = new Label("Cell Height(Max = 10, Min = 1)", skin);
 		eHeightLabel.setPosition(300,50);
 		stage.addActor(eHeightLabel);
 		
@@ -172,7 +167,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		inputMultiplexer.addProcessor(this);
 		inputMultiplexer.addProcessor(stage);
 		Gdx.input.setInputProcessor(inputMultiplexer);
-		b = new board(800,600,3,3);
+		b = new board(800,600,2,2);
 
 		playing = false; //set to false
 		
@@ -219,7 +214,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 			public void clicked(InputEvent event, float x, float y) {
 				
 				error.setVisible(false);
-				validate(bWidth.getText(),bHeight.getText(),eWidth.getText(),eHeight.getText());
+				validate(eWidth.getText(),eHeight.getText());
 				
 				
 				
@@ -243,11 +238,14 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		
 		aliveCells = 0;
 		
-		/*activeCells = new HashSet<Point>();
-		toRemove = new ArrayList<Point>();
-		toAdd = new ArrayList<Point>();*/
-		
-		
+	
+		newActiveCells = new HashSet<Point>();
+
+		border = new Pixmap(b.getBoardWidth(), 5, Format.RGBA8888 );
+		border.setColor( 1, 1, 1, 0.5f);
+		border.fill();
+		borderTexture = new Texture(border);
+	
 	}
 
 	
@@ -272,16 +270,22 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 		
 		//Attempted solution using active cells only
-		/*
-		for(Point p: activeCells) {
 		
-			if(placeHolder[p.x][p.y]==b.liveOrDie(b.getEntityArray()[p.x][p.y], b.checkNeighbours(b.getEntityArray()[p.x][p.y]))) {
+		for(Point p: newActiveCells) {
+		
+			/*if(placeHolder[p.x][p.y]==b.liveOrDie(b.getEntityArray()[p.x][p.y], b.checkNeighbours(b.getEntityArray()[p.x][p.y]))) {
 				toRemove.add(p);
 				
 			}
 			else {
 				placeHolder[p.x][p.y] = b.liveOrDie(b.getEntityArray()[p.x][p.y], b.checkNeighbours(b.getEntityArray()[p.x][p.y]));
 				toAdd.add(new Point(p.x,p.y));
+			}*/
+			
+			
+			if(placeHolder[p.x][p.y]!=b.liveOrDie(b.getEntityArray()[p.x][p.y], b.checkNeighbours(b.getEntityArray()[p.x][p.y]))) {
+				placeHolder[p.x][p.y] =!placeHolder[p.x][p.y];
+				
 			}
 			
 			//System.out.println(p.x+ " X " + p.y + " Y ");
@@ -289,36 +293,67 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		
 		
 	
-		for(Point p: toAdd) {
+		/*for(Point p: toAdd) {
 			addActive(p);
-		}
+		}*/
 		
 		
 		//System.out.println("ToRemove " + toRemove.size());
 		//activeCells.removeAll(toRemove);
 		//toRemove.clear();
-		toAdd.clear();
+		//toAdd.clear();
 		
-		if(playing) {
+		/*if(playing) {
 			for(Point p: activeCells) {
 				b.getEntityArray()[p.x][p.y].setLiving(placeHolder[p.x][p.y]);
 			}
 			
-		}
-		System.out.println("Active cells " + activeCells.size());
-
-		for(int x =0;x<b.getEntityArray().length;x+=entityWidth) {
-			for(int y=0;y<b.getEntityArray()[0].length;y+=entityHeight) {
-				
-	
+		}*/
+		//System.out.println("Active cells " + activeCells.size());
 		
-				batch.draw(b.getEntityArray()[x][y].getTexture(), b.getEntityArray()[x][y].getX(), b.getEntityArray()[x][y].getY());
+		newActiveCells.clear();
+		
+		for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
+			for(int y=0;y<b.getEntityArray()[0].length;y+=b.getEntityHeight()) {
+				
+				//changedCell = b.getEntityArray()[x][y].getLiving();
+				
+				if(playing) {
+					b.getEntityArray()[x][y].setLiving(placeHolder[x][y]);
+				}
+				
+				//try only drawing cells that have changed
+			
+				//batch.draw(b.getEntityArray()[x][y].getTexture(), b.getEntityArray()[x][y].getX(), b.getEntityArray()[x][y].getY());
+				
+				
+				if(b.getEntityArray()[x][y].getLiving()){
+					batch.draw(b.getEntityArray()[x][y].getTexture(), b.getEntityArray()[x][y].getX(), b.getEntityArray()[x][y].getY());
+					
+					aliveCells++;
+				}
+				
+				
+				
+				//add new active cells
+				if(b.getEntityArray()[x][y].getLiving()) {
+					addActive(new Point(x,y));
+				}
 				
 			}
-		}*/
+		}
+		
+		
+		
+			
+			batch.draw(borderTexture, 0, b.getBoardHeight());
+		
+		
+		
+		//System.out.println(newActiveCells.size());
 		
 		//Inefficient solution
-		
+		/*
 		//Uses the placeholder to store the next entity state dependent on the checkNeighbours method
 		for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
 			 
@@ -354,9 +389,9 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 					
 				}
 			}
-			
+		*/
 		aliveLabel.setText(aliveString + aliveCells);	
-	
+		aliveCells = 0;
 		
 		batch.end();
 		
@@ -367,6 +402,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	
 	@Override
 	public void dispose () {
+		borderTexture.dispose();
 		batch.dispose();
 		disposeCells();
 	}
@@ -411,14 +447,14 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 
 	
-	/*private void addActive(Point p) {
+	private void addActive(Point p) {
 		
-		activeCells.add(p);
+		newActiveCells.add(p);
 	
 		
 		//left middle
 		if(p.x>0) {
-			activeCells.add(new Point(p.x-entityWidth,p.y));
+			newActiveCells.add(new Point(p.x-b.getEntityWidth(),p.y));
 		}
 		
 		//left corner
@@ -428,7 +464,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		
 		
 		if(p.x>0&&p.y>0) {
-			activeCells.add(new Point(p.x-entityWidth,p.y-entityHeight));
+			newActiveCells.add(new Point(p.x-b.getEntityWidth(),p.y-b.getEntityHeight()));
 			
 		}
 		
@@ -436,24 +472,24 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 		
 		if(p.y>0) {
-			activeCells.add(new Point(p.x,p.y-entityHeight));
+			newActiveCells.add(new Point(p.x,p.y-b.getEntityHeight()));
 			//entities.get(neighbour).setLiving(true);
 		}
 		
 		//right corner
 
 		
-		if(p.x<boardWidth-entityWidth&&p.y>0) {
-			activeCells.add(new Point(p.x+entityWidth, p.y-entityHeight));
+		if(p.x<b.getBoardWidth()-b.getEntityWidth()&&p.y>0) {
+			newActiveCells.add(new Point(p.x+b.getEntityWidth(), p.y-b.getEntityHeight()));
 			//entities.get(neighbour).setLiving(true);
 		}
 		
 		//right middle
 
 		
-		if(p.x<boardWidth-entityWidth) {
+		if(p.x<b.getBoardWidth()-b.getEntityWidth()) {
 			
-			activeCells.add(new Point(p.x+entityWidth,p.y));
+			newActiveCells.add(new Point(p.x+b.getEntityWidth(),p.y));
 			//entities.get(neighbour).setLiving(true);
 			
 		}
@@ -461,8 +497,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		//right bottom
 
 		
-		if(p.x<boardWidth-entityWidth&&p.y<boardHeight-entityHeight) {
-			activeCells.add(new Point(p.x+entityWidth,p.y+entityHeight));
+		if(p.x<b.getBoardWidth()-b.getEntityWidth()&&p.y<b.getBoardHeight()-b.getEntityHeight()) {
+			newActiveCells.add(new Point(p.x+b.getEntityWidth(),p.y+b.getEntityHeight()));
 			//entities.get(neighbour).setLiving(true);
 			
 		}
@@ -470,19 +506,19 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
 		
 		//bottom
-		if(p.y<boardHeight-entityHeight) {
-			activeCells.add(new Point(p.x,p.y+entityHeight));
+		if(p.y<b.getBoardHeight()-b.getEntityHeight()) {
+			newActiveCells.add(new Point(p.x,p.y+b.getEntityHeight()));
 			//entities.get(neighbour).setLiving(true);
 		}
 		
 
 		//bottom left
-		if(p.x>0&&p.y<boardHeight-entityHeight) {
-			activeCells.add(new Point(p.x-entityWidth,p.y+entityHeight));
+		if(p.x>0&&p.y<b.getBoardHeight()-b.getEntityHeight()) {
+			newActiveCells.add(new Point(p.x-b.getEntityWidth(),p.y+b.getEntityHeight()));
 			//entities.get(neighbour).setLiving(true);
 			
 		}
-	}*/
+	}
 	
 	
 	@Override
@@ -514,9 +550,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	}
 	
 	public void reset() {
+		newActiveCells.clear();
 		for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
 			for(int y=0;y<b.getEntityArray()[0].length;y+=b.getEntityHeight()) {
 				b.getEntityArray()[x][y].setLiving(false);
+				placeHolder[x][y] = false; //added
 				
 			}
 			
@@ -525,23 +563,20 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	}
 	
 	//Validates the input to the board and entity dimension textfields
-	private void validate(String bWidth, String bHeight, String entWidth, String entHeight) {
+	private void validate(String entWidth, String entHeight) {
 	
-		int width;
-		int height;
+	
 		int eWidth;
 		int eHeight;
 		
 		   try {
-		        width = Integer.parseInt( bWidth );
-		        height = Integer.parseInt( bHeight );
 		        eWidth = Integer.parseInt( entWidth );
 		        eHeight = Integer.parseInt( entHeight );
 		        
-		        if(width<=800&&width>=400&&height<=600&&height>=400&&eWidth<=10&&eWidth>=3&&eHeight<=10&&eHeight>=3) {
+		        if(eWidth<=10&&eWidth>=1&&eHeight<=10&&eHeight>=1) {
 		        	disposeCells();
-		        	b = new board(width, height , eWidth, eHeight);
-					placeHolder = new boolean[width][height];
+		        	b = new board(800, 600, eWidth, eHeight);
+					placeHolder = new boolean[800][600];
 					status.setText("Status : Reset");
 					playing = false;
 					reset();
@@ -592,12 +627,12 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 			if(e.getLiving()) {
 				
 				e.setLiving(false);
-			
+				newActiveCells.remove(new Point(x,y));
 			}
 			else {
 			
 				e.setLiving(true);
-			
+				newActiveCells.add(new Point(x, y));
 			}
 		}
 	}
