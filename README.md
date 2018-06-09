@@ -49,7 +49,7 @@ Below is a gif showing the speed of the original program with cells set to 3 wid
 
 I came up with a solution to improve performance greatly. First off, I realised I only had to loop through the "active cells" these are the alive cells and their 9 surrounding cells.
 All other cells are dead unless they are neighboured with an active cell.
-With the use of a set to hold active cells and avoid duplicates, I was able to get rid of the double for loops and just go through the active cells to evaluate the placeholder values.
+With the use of a set to hold active cells and avoid duplicates, I was able to get rid of the first double for loop and just go through the active cells to evaluate the placeholder values.
 Another change was to avoid rendering dead cells, I simply left the dead cells black. This greatly increased the draw speed.
 
 Below is a gif showing the speed of the new program with cells set to 3 width and height.
