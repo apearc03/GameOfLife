@@ -8,7 +8,9 @@ state of each cell.
 3) Any live cell with two or three live neighbors lives on to the next generation.
 4) Any dead cell with exactly three live neighbors becomes a live cell.
 
+# Dependencies
 
+Java Runtime Environment
 
 # Running and packaging
 
@@ -32,6 +34,3 @@ This will create a runnable JAR file located in the desktop/build/libs/ folder. 
 
 Create a pattern on the board and then start the simulation with the play button. The state of the board can be paused at any time with the stop button and also reset.
 
-# To do improvements
-
-A better algorithm for each generation which only iterates through the "active cells" rather than every cell. Active cells are any alive cells and their 8 surrounding cells.
