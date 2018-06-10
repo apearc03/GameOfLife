@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -57,11 +58,14 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	eHeight;
 		
 	private Label
+	patternLabel,
 	eWidthLabel,
 	eHeightLabel,
 	status,
 	aliveLabel,
 	error;
+	
+	private SelectBox<String> patternSelect;
 	
 	private Stage stage;
 	private OrthographicCamera camera;
@@ -133,35 +137,47 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 	
 
 		eWidth = new TextField("", skin);
-		eWidth.setPosition(600, 85);
+		eWidth.setPosition(600, 120);
 		eWidth.setMessageText("Cell Width");
 		stage.addActor(eWidth);
 		
 		eHeight = new TextField("", skin);
-		eHeight.setPosition(600, 50);
+		eHeight.setPosition(600, 85);
 		eHeight.setMessageText("Cell Height");
 		stage.addActor(eHeight);
 		
+	
 		
 		apply = new TextButton("Apply", skin);
 		apply.setPosition(600, 15);
 		stage.addActor(apply);
 		
-		error = new Label("Invalid inputs", skin);
+		error = new Label("Invalid Cell inputs", skin);
 		error.setVisible(false);
 		error.setPosition(650, 15);
 		error.setColor(Color.RED);
 		stage.addActor(error);
 		
 		
+		
+		
 		eWidthLabel = new Label("Cell Width(Max = 10, Min = 1)", skin);
-		eWidthLabel.setPosition(300,85);
+		eWidthLabel.setPosition(350,120);
 		stage.addActor(eWidthLabel);
 		
 		eHeightLabel = new Label("Cell Height(Max = 10, Min = 1)", skin);
-		eHeightLabel.setPosition(300,50);
+		eHeightLabel.setPosition(350,85);
 		stage.addActor(eHeightLabel);
 		
+		patternLabel = new Label("Pattern", skin);
+		patternLabel.setPosition(350, 50);
+		stage.addActor(patternLabel);
+		
+		patternSelect = new SelectBox<String>(skin);
+		patternSelect.setItems("ShowCase", "Quad Blinker", "Faces");
+		patternSelect.setPosition(600, 50);
+		patternSelect.setSize(150, 30);
+		stage.addActor(patternSelect);
 		
 		inputMultiplexer = new InputMultiplexer();
 		inputMultiplexer.addProcessor(this);
@@ -187,8 +203,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		reset.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				status.setText("Status : Reset");
-				playing = false;
+				//status.setText("Status : Reset");
+				//playing = false;
 				reset();
 				super.clicked(event, x, y);
 			}
@@ -245,6 +261,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		border.setColor( 1, 1, 1, 0.5f);
 		border.fill();
 		borderTexture = new Texture(border);
+		addPattern(patternSelect.getSelected());
 	
 	}
 
@@ -346,7 +363,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		
 		
 			
-			batch.draw(borderTexture, 0, b.getBoardHeight());
+		batch.draw(borderTexture, 0, b.getBoardHeight());
 		
 		
 		
@@ -554,12 +571,14 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		for(int x =0;x<b.getEntityArray().length;x+=b.getEntityWidth()) {
 			for(int y=0;y<b.getEntityArray()[0].length;y+=b.getEntityHeight()) {
 				b.getEntityArray()[x][y].setLiving(false);
-				placeHolder[x][y] = false; //added
+				placeHolder[x][y] = false; 
 				
 			}
 			
 		}
-		
+		playing = false;
+		aliveCells = 0;
+		status.setText("Status : Reset");
 	}
 	
 	//Validates the input to the board and entity dimension textfields
@@ -569,7 +588,12 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		int eWidth;
 		int eHeight;
 		
+		if(entWidth.equals("")&&entHeight.equals("")) {
+			   error.setVisible(false);
+		}
+		else {
 		   try {
+
 		        eWidth = Integer.parseInt( entWidth );
 		        eHeight = Integer.parseInt( entHeight );
 		        
@@ -577,10 +601,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		        	disposeCells();
 		        	b = new board(800, 600, eWidth, eHeight);
 					placeHolder = new boolean[800][600];
-					status.setText("Status : Reset");
-					playing = false;
-					reset();
-					aliveCells = 0;
+					//status.setText("Status : Reset");
+					//playing = false;
+					//reset();
+					//aliveCells = 0;
+					
 		        }
 		        else {
 		        	error.setVisible(true);
@@ -590,8 +615,174 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 		    catch( NumberFormatException e ) {
 		    	error.setVisible(true);
 		    }
+		}
+		reset();
+		addPattern(patternSelect.getSelected());
+		
+	}
+	
+	
+	private void addPattern(String pattern) {
+		
+		//need to set AliveCells and add to newActiveCells. Just use addActiveMethod
+		
+		
+		int xCoordinates[] = {b.getBoardWidth()-b.getBoardWidth()/4,0+b.getBoardWidth()/4};
+		int yCoordinates[] = {b.getBoardHeight()-b.getBoardHeight()/4,0+b.getBoardHeight()/4};
 		
 
+		for(int counter = 0; counter<2;counter++) {
+			while(xCoordinates[counter]%b.getEntityWidth()!=0) {
+				xCoordinates[counter]--;
+			}
+			while(yCoordinates[counter]%b.getEntityHeight()!=0) {
+				yCoordinates[counter]--;
+			}
+		}
+		
+	
+		
+		
+		/*
+		 * Works for a single coord
+		 * 
+		 * int x = b.getEntityArray().length/2;
+		int y = b.getEntityArray()[0].length/2;
+		
+		while(x%b.getEntityWidth()!=0) {
+			x--;
+		}
+		while(y%b.getEntityHeight()!=0) {
+			y--;
+		}*/
+		
+		
+		
+		switch (pattern) {
+		case "ShowCase":
+			
+			
+			for(int x: xCoordinates) {
+				for(int y: yCoordinates) {
+					addActive(new Point(x-b.getEntityWidth(),y-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth(),y-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*2,y-b.getEntityHeight()));
+					
+					b.getEntityArray()[x-b.getEntityWidth()][y-b.getEntityHeight()].setLiving(true);	
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()][y-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*2][y-b.getEntityHeight()].setLiving(true);
+					
+					////
+					
+					addActive(new Point(x-b.getEntityWidth()-b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()-b.getEntityWidth()*3,y-b.getEntityHeight()-b.getEntityHeight()*2));
+					
+					
+					b.getEntityArray()[x-b.getEntityWidth()-b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()-b.getEntityWidth()*3][y-b.getEntityHeight()-b.getEntityHeight()*2].setLiving(true);
+					
+					////
+					
+					addActive(new Point(x-b.getEntityWidth()-b.getEntityWidth()*3,y-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()-b.getEntityWidth()*4,y-b.getEntityHeight()));
+					
+					b.getEntityArray()[x-b.getEntityWidth()-b.getEntityWidth()*3][y-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()-b.getEntityWidth()*4][y-b.getEntityHeight()].setLiving(true);	
+					
+				}
+				
+			}
+			
+			break;
+		case "Quad Blinker":
+			
+			for(int x: xCoordinates) {
+				for(int y: yCoordinates) {
+					
+					addActive(new Point(x-b.getEntityWidth(),y-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth(),y-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*2,y-b.getEntityHeight()));
+					
+					b.getEntityArray()[x-b.getEntityWidth()][y-b.getEntityHeight()].setLiving(true);	
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()][y-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*2][y-b.getEntityHeight()].setLiving(true);
+					
+					////
+					
+					addActive(new Point(x-b.getEntityWidth(),y-b.getEntityHeight()*5));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth(),y-b.getEntityHeight()*5));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*2,y-b.getEntityHeight()*5));
+					
+					b.getEntityArray()[x-b.getEntityWidth()][y-b.getEntityHeight()*5].setLiving(true);	
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()][y-b.getEntityHeight()*5].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*2][y-b.getEntityHeight()*5].setLiving(true);
+					
+					////
+					
+					addActive(new Point(x-b.getEntityWidth()-b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()-b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()*2));
+					addActive(new Point(x-b.getEntityWidth()-b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()*3));
+					
+					b.getEntityArray()[x-b.getEntityWidth()-b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()-b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()*2].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()-b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()*3].setLiving(true);
+					
+					///
+					
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*3,y-b.getEntityHeight()-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*3,y-b.getEntityHeight()-b.getEntityHeight()*2));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*3,y-b.getEntityHeight()-b.getEntityHeight()*3));
+					
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*3][y-b.getEntityHeight()-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*3][y-b.getEntityHeight()-b.getEntityHeight()*2].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*3][y-b.getEntityHeight()-b.getEntityHeight()*3].setLiving(true);
+					
+				}
+				
+			}
+			
+			break;
+		case "Faces":
+			
+			for(int x: xCoordinates) {
+				for(int y: yCoordinates) {
+					
+					
+					
+					////
+					
+					addActive(new Point(x-b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()*2));
+					addActive(new Point(x-b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()*3));
+					
+					b.getEntityArray()[x-b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()*2].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()*3].setLiving(true);
+					
+					///
+					
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*2,y-b.getEntityHeight()-b.getEntityHeight()));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*2,y-b.getEntityHeight()-b.getEntityHeight()*2));
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth()*2,y-b.getEntityHeight()-b.getEntityHeight()*3));
+					
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*2][y-b.getEntityHeight()-b.getEntityHeight()].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*2][y-b.getEntityHeight()-b.getEntityHeight()*2].setLiving(true);
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()*2][y-b.getEntityHeight()-b.getEntityHeight()*3].setLiving(true);
+					
+					///
+					
+					addActive(new Point(x-b.getEntityWidth()+b.getEntityWidth(),y-b.getEntityHeight()-b.getEntityHeight()*4));
+					b.getEntityArray()[x-b.getEntityWidth()+b.getEntityWidth()][y-b.getEntityHeight()-b.getEntityHeight()*4].setLiving(true);
+				}
+				
+			}
+			
+			break;
+		default:
+			break;
+		}
+		
+		
 	}
 	
 	
