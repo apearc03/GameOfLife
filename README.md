@@ -53,5 +53,5 @@ This will create a runnable JAR file located in the desktop/build/libs/ folder. 
 
 # Controls
 
-Create a pattern on the board and then start the simulation with the play button. The state of the board can be paused at any time with the stop button and also reset.
+Create or use one of the default patterns and then start the simulation with the play button. The state of the board can be paused at any time with the stop button and also reset.
 
