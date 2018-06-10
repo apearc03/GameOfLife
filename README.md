@@ -8,6 +8,27 @@ state of each cell.
 3) Any live cell with two or three live neighbors lives on to the next generation.
 4) Any dead cell with exactly three live neighbors becomes a live cell.
 
+
+# Algorithm efficiency
+
+My original algorithm for calculating the state of cells involved using a double for loop to create a boolean value in a two dimensional array(The placeholder). This value represented the cell's state, true would equal alive and false would equal dead.
+This involved going through every single cell on the board.
+I would then loop through every cell once again in the same render call and draw each cell with a texture dependent on the placeholder value.
+I also rendered textures to the screen for all the dead cells.
+These two factors combined lead to poor performance when the cell sizes were reduced, increasing the number of total cells.
+
+Below is a gif showing the speed of the original program with cells set to 3 units of width and height.
+
+
+
+
+I came up with a solution to improve performance greatly. First off, I realised I only had to loop through the "active cells" these are the alive cells and their 9 surrounding cells.
+All other cells have to be dead if they are neighboured with an active cell.
+With the use of a set to hold active cells and avoid duplicates, I was able to get rid of the first double for loop and just go through the active cells to evaluate the placeholder values.
+Another change was to avoid rendering dead cells, I simply left the dead cells black. This greatly increased the draw speed.
+
+Below is a gif showing the speed of the second version with cells set to 3 units width and height.
+
 # Dependencies
 
 Java Runtime Environment
@@ -34,22 +55,3 @@ This will create a runnable JAR file located in the desktop/build/libs/ folder. 
 
 Create a pattern on the board and then start the simulation with the play button. The state of the board can be paused at any time with the stop button and also reset.
 
-# Algorithm efficiency
-
-My original algorithm for calculating the state of cells involved using a double for loop to create a boolean value in a two dimensional array(The placeholder). This value represented the cell's state, true would equal alive and false would equal dead.
-This involved going through every single cell on the board.
-I would then loop through every cell once again in the same render call and draw each cell with a texture dependent on the placeholder value.
-I also rendered textures to the screen for all the dead cells.
-These two factors combined lead to poor performance when the cell sizes were reduced, increasing the number of total cells.
-
-Below is a gif showing the speed of the original program with cells set to 3 units of width and height.
-
-
-
-
-I came up with a solution to improve performance greatly. First off, I realised I only had to loop through the "active cells" these are the alive cells and their 9 surrounding cells.
-All other cells have to be dead if they are neighboured with an active cell.
-With the use of a set to hold active cells and avoid duplicates, I was able to get rid of the first double for loop and just go through the active cells to evaluate the placeholder values.
-Another change was to avoid rendering dead cells, I simply left the dead cells black. This greatly increased the draw speed.
-
-Below is a gif showing the speed of the second version with cells set to 3 units width and height.
