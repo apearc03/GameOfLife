@@ -348,14 +348,10 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 					batch.draw(b.getEntityArray()[x][y].getTexture(), b.getEntityArray()[x][y].getX(), b.getEntityArray()[x][y].getY());
 					
 					aliveCells++;
-				}
-				
-				
-				
-				//add new active cells
-				if(b.getEntityArray()[x][y].getLiving()) {
 					addActive(new Point(x,y));
 				}
+				
+				
 				
 			}
 		}
