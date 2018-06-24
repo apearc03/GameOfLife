@@ -22,7 +22,7 @@ Below is a gif showing the speed of the original program with cells set to 3 uni
 <img src="https://media.giphy.com/media/1naw4yHWDKEzNGMRjH/giphy.gif" />
 
 
-I came up with a solution to improve performance greatly. First off, I realised I only had to loop through the "active cells" these are the alive cells and their 9 surrounding cells.
+I came up with a solution to improve performance greatly. First off, I realised I only had to loop through the "active cells" these are the alive cells and their 8 surrounding cells.
 All other cells have to be dead if they are neighboured with an active cell.
 With the use of a set to hold active cells and avoid duplicates, I was able to get rid of the first double for loop and just go through the active cells to evaluate the placeholder values.
 Another change was to avoid rendering dead cells, I simply left the dead cells black. This greatly increased the draw speed.
