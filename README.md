@@ -46,7 +46,7 @@ To run the game:
 
 gradlew desktop:run
 
-This compiles your core and desktop project, and runs the desktop starter. The working directory is the project's assets folder!
+This compiles your core and desktop project, and runs the desktop starter.
 
 To package the game:
 
