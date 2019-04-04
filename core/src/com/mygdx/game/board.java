@@ -34,7 +34,7 @@ public class board {
 
 		for(int x = 0;x<width;x+=entityWidth) {
 			for(int y = 0;y<height;y+=entityHeight) {
-				entities[x][y]= new entity(x, y, entityWidth, entityHeight);
+				entities[x][y]= new entity(x, y);
 			}
 		}
 		

@@ -1,8 +1,5 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
-import com.badlogic.gdx.graphics.Texture;
 
 /**
  * 
@@ -22,7 +19,7 @@ public class entity {
 	private boolean living;
 	
 	//Constructor sets the position and size. Initialises the entity as dead.
-	public entity(int xCo, int yCo, int width, int height) {
+	public entity(int xCo, int yCo) {
 		x = xCo;
 		y = yCo;
 		living = false;
